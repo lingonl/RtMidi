@@ -217,7 +217,7 @@ func (m *RtMidiIn) Open(portNumber int, portName string) {
 	_Open(C.RtMidiPtr(m.ptr), portNumber, portName)
 }
 
-func (m *RtMidiIn) OpenVirtual(device C.RtMidiPtr, portName string) {
+func (m *RtMidiIn) OpenVirtual(portName string) {
 	_OpenVirtual(C.RtMidiPtr(m.ptr), portName)
 }
 
@@ -261,7 +261,7 @@ func (m *RtMidiOut) Open(portNumber int, portName string) {
 	_Open(C.RtMidiPtr(m.ptr), portNumber, portName)
 }
 
-func (m *RtMidiOut) OpenVirtual(device C.RtMidiPtr, portName string) {
+func (m *RtMidiOut) OpenVirtual(portName string) {
 	_OpenVirtual(C.RtMidiPtr(m.ptr), portName)
 }
 
