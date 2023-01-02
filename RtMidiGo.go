@@ -139,7 +139,7 @@ func _GetPortNames(device C.RtMidiPtr) map[int]string {
 	portCount := _GetPortCount(device)
 	portNames := make(map[int]string, portCount)
 
-	for portNumber := 1; portNumber < portCount; portNumber++ {
+	for portNumber := 1; portNumber <= portCount; portNumber++ {
 		portNames[portNumber] = _GetPortName(device, portNumber)
 	}
 
