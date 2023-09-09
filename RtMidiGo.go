@@ -170,6 +170,7 @@ type RtMidiIn struct {
 	id       int
 	ptr      C.RtMidiInPtr
 	callback func(in *RtMidiIn, msg []byte, ts float64)
+	ch       chan []byte
 }
 
 func (m *RtMidiIn) CancelCallback() {
@@ -177,6 +178,8 @@ func (m *RtMidiIn) CancelCallback() {
 }
 
 func (m *RtMidiIn) Close() {
+	close(m.ch)
+
 	_Close(C.RtMidiPtr(m.ptr))
 }
 
@@ -221,6 +224,14 @@ func (m *RtMidiIn) OpenVirtual(portName string) {
 	_OpenVirtual(C.RtMidiPtr(m.ptr), portName)
 }
 
+func (m *RtMidiIn) OpenChannel(portName string) {
+	m.ch = make(chan []byte)
+
+	m.SetCallback(func(in *RtMidiIn, msg []byte, ts float64) {
+		m.ch <- msg
+	})
+}
+
 func (m *RtMidiIn) SetCallback(callback func(in *RtMidiIn, msg []byte, ts float64)) {
 	m.callback = callback
 
@@ -231,9 +242,12 @@ type RtMidiOut struct {
 	RtMidiInterface
 	id  int
 	ptr C.RtMidiOutPtr
+	ch  chan []byte
 }
 
 func (m *RtMidiOut) Close() {
+	close(m.ch)
+
 	_Close(C.RtMidiPtr(m.ptr))
 }
 
@@ -258,11 +272,21 @@ func (m *RtMidiOut) GetPortNames() map[int]string {
 }
 
 func (m *RtMidiOut) Open(portNumber int, portName string) {
+	m.OpenChannel()
+
 	_Open(C.RtMidiPtr(m.ptr), portNumber, portName)
 }
 
 func (m *RtMidiOut) OpenVirtual(portName string) {
+	m.OpenChannel()
+
 	_OpenVirtual(C.RtMidiPtr(m.ptr), portName)
+}
+
+func (m *RtMidiOut) OpenChannel() {
+	m.ch = make(chan []byte)
+
+	go m.LoopChannel()
 }
 
 func (m *RtMidiOut) Send(message []byte) {
@@ -270,4 +294,16 @@ func (m *RtMidiOut) Send(message []byte) {
 	defer C.free(unsafe.Pointer(p))
 
 	C.rtmidi_out_send_message(m.ptr, (*C.uchar)(p), C.int(len(message)))
+}
+
+func (m *RtMidiOut) LoopChannel() {
+	for {
+		v, ok := <-m.ch
+
+		if !ok {
+			return
+		}
+
+		m.Send(v)
+	}
 }
