@@ -218,13 +218,17 @@ func (m *RtMidiIn) IgnoreTypes(midiSysex bool, midiTime bool, midiSense bool) {
 
 func (m *RtMidiIn) Open(portNumber int, portName string) {
 	_Open(C.RtMidiPtr(m.ptr), portNumber, portName)
+
+	m.OpenChannel()
 }
 
 func (m *RtMidiIn) OpenVirtual(portName string) {
 	_OpenVirtual(C.RtMidiPtr(m.ptr), portName)
+
+	m.OpenChannel()
 }
 
-func (m *RtMidiIn) OpenChannel(portName string) {
+func (m *RtMidiIn) OpenChannel() {
 	m.CH = make(chan []byte)
 
 	m.SetCallback(func(in *RtMidiIn, msg []byte, ts float64) {
@@ -272,15 +276,15 @@ func (m *RtMidiOut) GetPortNames() map[int]string {
 }
 
 func (m *RtMidiOut) Open(portNumber int, portName string) {
-	m.OpenChannel()
-
 	_Open(C.RtMidiPtr(m.ptr), portNumber, portName)
+
+	m.OpenChannel()
 }
 
 func (m *RtMidiOut) OpenVirtual(portName string) {
-	m.OpenChannel()
-
 	_OpenVirtual(C.RtMidiPtr(m.ptr), portName)
+
+	m.OpenChannel()
 }
 
 func (m *RtMidiOut) OpenChannel() {
