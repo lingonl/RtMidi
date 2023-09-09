@@ -1,1 +1,1 @@
-module lingonl/RtMidiGo
+module github.com/lingonl/RtMidiGo
