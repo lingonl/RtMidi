@@ -48,6 +48,7 @@ func CreateIn(api uint32, clientName string, queueSizeLimit uint) *RtMidiIn {
 	port := &RtMidiIn{
 		ptr: C.rtmidi_in_create(api, C.CString(clientName), C.uint(queueSizeLimit)),
 		id:  _NextId(),
+		CH:  make(chan []byte),
 	}
 
 	ins[port.id] = port
@@ -59,6 +60,7 @@ func CreateInDefault() *RtMidiIn {
 	port := &RtMidiIn{
 		ptr: C.rtmidi_in_create_default(),
 		id:  _NextId(),
+		CH:  make(chan []byte),
 	}
 
 	ins[port.id] = port
@@ -70,6 +72,7 @@ func CreateOut(api uint32, clientName string) *RtMidiOut {
 	port := &RtMidiOut{
 		ptr: C.rtmidi_out_create(api, C.CString(clientName)),
 		id:  _NextId(),
+		CH:  make(chan []byte),
 	}
 
 	outs[port.id] = port
@@ -81,6 +84,7 @@ func CreateOutDefault() *RtMidiOut {
 	port := &RtMidiOut{
 		ptr: C.rtmidi_out_create_default(),
 		id:  _NextId(),
+		CH:  make(chan []byte),
 	}
 
 	outs[port.id] = port
@@ -229,8 +233,6 @@ func (m *RtMidiIn) OpenVirtual(portName string) {
 }
 
 func (m *RtMidiIn) OpenChannel() {
-	m.CH = make(chan []byte)
-
 	m.SetCallback(func(in *RtMidiIn, msg []byte, ts float64) {
 		m.CH <- msg
 	})
@@ -288,8 +290,6 @@ func (m *RtMidiOut) OpenVirtual(portName string) {
 }
 
 func (m *RtMidiOut) OpenChannel() {
-	m.CH = make(chan []byte)
-
 	go m.LoopChannel()
 }
 
