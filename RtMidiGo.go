@@ -179,6 +179,8 @@ type RtMidiIn struct {
 
 func (m *RtMidiIn) CancelCallback() {
 	C.rtmidi_in_cancel_callback(m.ptr)
+
+	m.callback = nil
 }
 
 func (m *RtMidiIn) Close() {
@@ -239,6 +241,10 @@ func (m *RtMidiIn) OpenChannel() {
 }
 
 func (m *RtMidiIn) SetCallback(callback func(in *RtMidiIn, msg []byte, ts float64)) {
+	if m.callback != nil {
+		m.CancelCallback()
+	}
+
 	m.callback = callback
 
 	C.SetCallback(m.ptr, C.int(m.id))
